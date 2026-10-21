@@ -1,0 +1,39 @@
+plugins {
+    id 'com.android.application'
+}
+
+android {
+    namespace 'com.ortakhesap'
+    compileSdk 35
+
+    defaultConfig {
+        applicationId 'com.ortakhesap'
+        minSdk 26
+        targetSdk 35
+        versionCode 1
+        versionName '1.0'
+    }
+
+    signingConfigs {
+        // Kişisel kullanım için sabit anahtar: her derleme aynı imzayla çıkar,
+        // böylece yeni sürüm eskisinin üstüne (veriler silinmeden) kurulabilir.
+        release {
+            storeFile file('release.keystore')
+            storePassword 'ortakhesap123'
+            keyAlias 'ortakhesap'
+            keyPassword 'ortakhesap123'
+        }
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            signingConfig signingConfigs.release
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+}
