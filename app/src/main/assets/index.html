@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Ortak Hesap</title>
+<title>ASM Cari Hesaplama</title>
 <style>
   :root {
     --bg: #f3f5f4;
@@ -12,8 +12,8 @@
     --muted: #66706d;
     --line: #dfe4e2;
     --accent: #1e6b5c;
+    --on-accent: #ffffff;
     --accent-soft: #e2efec;
-    --plus: #1e7a3c;
     --minus: #b3261e;
   }
   @media (prefers-color-scheme: dark) {
@@ -24,8 +24,8 @@
       --muted: #9aa5a1;
       --line: #2e3533;
       --accent: #5cc2a9;
+      --on-accent: #0d1f1a;
       --accent-soft: #20332e;
-      --plus: #6fd08c;
       --minus: #ff8a80;
     }
   }
@@ -38,14 +38,14 @@
     -webkit-tap-highlight-color: transparent;
   }
   header {
-    background: var(--accent);
+    background: #1e6b5c;
     color: #fff;
     padding: 16px;
     display: flex;
     align-items: center;
     justify-content: space-between;
+    gap: 12px;
   }
-  @media (prefers-color-scheme: dark) { header { color: #0d1f1a; } }
   header h1 { margin: 0; font-size: 20px; }
   header button {
     background: rgba(255,255,255,.2);
@@ -54,6 +54,7 @@
     border-radius: 8px;
     padding: 8px 12px;
     font-size: 14px;
+    white-space: nowrap;
   }
   main { padding: 12px; max-width: 720px; margin: 0 auto; }
   section {
@@ -78,7 +79,7 @@
   input:focus, select:focus { outline: 2px solid var(--accent); border-color: transparent; }
   button.add {
     background: var(--accent);
-    color: #fff;
+    color: var(--on-accent);
     border: 0;
     border-radius: 8px;
     padding: 10px 14px;
@@ -86,14 +87,34 @@
     font-weight: 600;
     white-space: nowrap;
   }
-  @media (prefers-color-scheme: dark) { button.add { color: #0d1f1a; } }
-  .cari-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  .cari-grid label { font-size: 13px; color: var(--muted); display: block; margin-bottom: 4px; }
+  button.ghost {
+    width: 100%;
+    margin-top: 10px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border: 1px dashed var(--accent);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 15px;
+    font-weight: 600;
+  }
+  button.del {
+    border: 0;
+    background: transparent;
+    color: var(--minus);
+    font-size: 22px;
+    line-height: 1;
+    padding: 4px 8px;
+  }
+  button.del:disabled { visibility: hidden; }
+  .kisi-basliklar, .kisi-satir { display: grid; grid-template-columns: 1fr 38% 34px; gap: 6px; align-items: center; }
+  .kisi-basliklar { font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .kisi-satir { margin-bottom: 6px; }
   .person { border-top: 1px solid var(--line); padding-top: 12px; margin-top: 12px; }
-  .person:first-of-type { border-top: 0; padding-top: 0; margin-top: 0; }
-  .person-head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-  .person-head strong { font-size: 16px; }
-  .person-head span { font-weight: 700; color: var(--accent); }
+  .person:first-child { border-top: 0; padding-top: 0; margin-top: 0; }
+  .person-head { display: flex; justify-content: space-between; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+  .person-head strong { font-size: 16px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .person-head span { font-weight: 700; color: var(--accent); white-space: nowrap; }
   .row { display: flex; gap: 6px; }
   .row .amt { flex: 0 0 34%; }
   .row .note { flex: 1; }
@@ -103,50 +124,44 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    padding: 6px 0;
+    padding: 4px 0;
     border-bottom: 1px dashed var(--line);
     font-size: 15px;
   }
   ul.items li:last-child { border-bottom: 0; }
   ul.items .what { flex: 1; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
   ul.items .val { font-variant-numeric: tabular-nums; font-weight: 600; }
-  ul.items button {
-    border: 0;
-    background: transparent;
-    color: var(--minus);
-    font-size: 20px;
-    line-height: 1;
-    padding: 2px 6px;
-  }
   table { width: 100%; border-collapse: collapse; font-size: 14px; font-variant-numeric: tabular-nums; }
-  th, td { padding: 8px 4px; text-align: right; border-bottom: 1px solid var(--line); }
+  th, td { padding: 8px 3px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
   th:first-child, td:first-child { text-align: left; }
   th { color: var(--muted); font-weight: 600; font-size: 12px; }
   tr.total td { font-weight: 700; border-bottom: 0; }
   .table-wrap { overflow-x: auto; }
-  .pos { color: var(--plus); }
   .neg { color: var(--minus); }
   .summary { display: flex; gap: 8px; margin-top: 12px; }
   .summary div { flex: 1; background: var(--accent-soft); border-radius: 8px; padding: 10px; }
   .summary small { display: block; color: var(--muted); font-size: 12px; }
   .summary b { font-size: 17px; }
-  .settle td { font-size: 16px; padding: 12px 4px; }
+  .settle td { font-size: 16px; padding: 12px 4px; white-space: normal; }
   .settle th:nth-child(3), .settle td:nth-child(3) { text-align: left; }
   .settle td.arrow { text-align: center; color: var(--muted); }
-  .settle td.amount { font-weight: 700; color: var(--accent); }
+  .settle td.amount { font-weight: 700; color: var(--accent); white-space: nowrap; }
   .empty { color: var(--muted); font-size: 14px; text-align: center; padding: 8px 0; }
+  ul.items li.empty { display: block; border: 0; }
 </style>
 </head>
 <body>
 <header>
-  <h1>Ortak Hesap</h1>
+  <h1>ASM Cari Hesaplama</h1>
   <button id="sifirla" type="button">Yeni ay</button>
 </header>
 <main>
   <section>
-    <h2>Cari (ayın 8'i)</h2>
-    <p class="hint">Her kişinin hesabına yatan tutar.</p>
-    <div class="cari-grid" id="cari"></div>
+    <h2>Kişiler ve cari</h2>
+    <p class="hint">İsimlere dokunup değiştirebilirsin. Her kişinin hesabına yatan cari tutarını yaz.</p>
+    <div class="kisi-basliklar"><span>İsim</span><span>Yatan cari</span><span></span></div>
+    <div id="kisiler"></div>
+    <button class="ghost" id="kisi-ekle" type="button">+ Kişi ekle</button>
   </section>
 
   <section>
@@ -192,6 +207,7 @@
       <thead><tr><th>Kimden</th><th></th><th>Kime</th><th>Tutar</th></tr></thead>
       <tbody id="esitleme"></tbody>
     </table>
+    <button class="ghost" id="paylas" type="button">Sonucu paylaş</button>
   </section>
 </main>
 
@@ -199,28 +215,41 @@
 (function () {
   'use strict';
 
-  var KISILER = ['Ercüment', 'Aişegül', 'Murat'];
-  var ANAHTAR = 'ortak-hesap-v1';
+  var ANAHTAR = 'asm-cari-v1';
+  var EN_AZ_KISI = 2;
 
   // Bütün tutarlar kuruş cinsinden tamsayı olarak tutulur; kayan nokta hatası olmasın.
+  // Kişiler sabit bir kimlikle tutulur ki isim değişince harcama ve transferler kaybolmasın.
   function bosDurum() {
-    var d = { cari: {}, harcamalar: {}, transferler: [] };
-    KISILER.forEach(function (k) { d.cari[k] = 0; d.harcamalar[k] = []; });
+    var d = { kisiler: [], cari: {}, harcamalar: {}, transferler: [], sonId: 0 };
+    kisiEkle(d);
+    kisiEkle(d);
     return d;
+  }
+
+  function kisiEkle(d) {
+    var id = 'k' + (++d.sonId);
+    var no = d.kisiler.length + 1;
+    var adlar = d.kisiler.map(function (k) { return k.ad; });
+    while (adlar.indexOf('Doktor ' + no) !== -1) no++;
+    d.kisiler.push({ id: id, ad: 'Doktor ' + no });
+    d.cari[id] = 0;
+    d.harcamalar[id] = [];
+    return id;
   }
 
   function yukle() {
     try {
-      var ham = localStorage.getItem(ANAHTAR);
-      if (!ham) return bosDurum();
-      var d = JSON.parse(ham);
-      var temel = bosDurum();
-      KISILER.forEach(function (k) {
-        if (d.cari && typeof d.cari[k] === 'number') temel.cari[k] = d.cari[k];
-        if (d.harcamalar && Array.isArray(d.harcamalar[k])) temel.harcamalar[k] = d.harcamalar[k];
+      var d = JSON.parse(localStorage.getItem(ANAHTAR));
+      if (!d || !Array.isArray(d.kisiler) || d.kisiler.length < EN_AZ_KISI) return bosDurum();
+      d.cari = d.cari || {};
+      d.harcamalar = d.harcamalar || {};
+      d.transferler = Array.isArray(d.transferler) ? d.transferler : [];
+      d.kisiler.forEach(function (k) {
+        if (typeof d.cari[k.id] !== 'number') d.cari[k.id] = 0;
+        if (!Array.isArray(d.harcamalar[k.id])) d.harcamalar[k.id] = [];
       });
-      if (Array.isArray(d.transferler)) temel.transferler = d.transferler;
-      return temel;
+      return d;
     } catch (e) {
       return bosDurum();
     }
@@ -232,6 +261,13 @@
     try { localStorage.setItem(ANAHTAR, JSON.stringify(durum)); } catch (e) { /* depolama yoksa sessizce geç */ }
   }
   window.kaydet = kaydet;
+
+  function ad(id) {
+    for (var i = 0; i < durum.kisiler.length; i++) {
+      if (durum.kisiler[i].id === id) return durum.kisiler[i].ad.trim() || 'İsimsiz';
+    }
+    return '?';
+  }
 
   // "1.250,50", "1250,5", "1250.50", "1.250" gibi yazımları kuruşa çevirir. Geçersizse null.
   function kurusaCevir(metin) {
@@ -249,22 +285,27 @@
   var bicim = new Intl.NumberFormat('tr-TR', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
   function tl(kurus) { return bicim.format(kurus / 100) + ' ₺'; }
   function sayi(kurus) { return bicim.format(kurus / 100); }
+  var tamBicim = new Intl.NumberFormat('tr-TR', { maximumFractionDigits: 0 });
+  // Dar tablolarda yer kazanmak için kuruşsuz tutarlar ",00" olmadan yazılır.
+  function sayiKisa(kurus) { return kurus % 100 === 0 ? tamBicim.format(kurus / 100) : sayi(kurus); }
 
   function toplam(liste) { return liste.reduce(function (t, x) { return t + x.tutar; }, 0); }
 
   function hesapla() {
-    var satirlar = KISILER.map(function (k) {
-      var giden = toplam(durum.transferler.filter(function (t) { return t.kimden === k; }));
-      var gelen = toplam(durum.transferler.filter(function (t) { return t.kime === k; }));
-      var harcama = toplam(durum.harcamalar[k]);
-      return { kisi: k, cari: durum.cari[k], harcama: harcama, giden: giden, gelen: gelen,
-               kalan: durum.cari[k] - harcama - giden + gelen };
+    var satirlar = durum.kisiler.map(function (k) {
+      var giden = toplam(durum.transferler.filter(function (t) { return t.kimden === k.id; }));
+      var gelen = toplam(durum.transferler.filter(function (t) { return t.kime === k.id; }));
+      var harcama = toplam(durum.harcamalar[k.id]);
+      var cari = durum.cari[k.id];
+      return { id: k.id, kisi: ad(k.id), cari: cari, harcama: harcama, giden: giden, gelen: gelen,
+               kalan: cari - harcama - giden + gelen };
     });
 
+    var n = satirlar.length;
     var toplamKalan = satirlar.reduce(function (t, s) { return t + s.kalan; }, 0);
     // Kuruş tam bölünmüyorsa artan kuruşlar sırayla ilk kişilere eklenir.
-    var taban = Math.floor(toplamKalan / KISILER.length);
-    var artan = toplamKalan - taban * KISILER.length;
+    var taban = Math.floor(toplamKalan / n);
+    var artan = toplamKalan - taban * n;
     satirlar.forEach(function (s, i) {
       s.pay = taban + (i < artan ? 1 : 0);
       s.fark = s.kalan - s.pay; // + ise fazlası var (verecek), − ise eksiği var (alacak)
@@ -288,7 +329,7 @@
       if (alanlar[j].miktar === 0) j++;
     }
 
-    return { satirlar: satirlar, toplamKalan: toplamKalan, kisiBasi: toplamKalan / KISILER.length, odemeler: odemeler };
+    return { satirlar: satirlar, toplamKalan: toplamKalan, kisiBasi: toplamKalan / n, odemeler: odemeler };
   }
 
   function el(etiket, ozellik, cocuklar) {
@@ -296,6 +337,7 @@
     if (ozellik) Object.keys(ozellik).forEach(function (a) {
       if (a === 'text') e.textContent = ozellik[a];
       else if (a === 'onclick') e.addEventListener('click', ozellik[a]);
+      else if (a === 'disabled') e.disabled = ozellik[a];
       else e.setAttribute(a, ozellik[a]);
     });
     (cocuklar || []).forEach(function (c) { e.appendChild(c); });
@@ -308,66 +350,116 @@
     setTimeout(function () { input.style.outline = ''; }, 1200);
   }
 
-  // ---- Cari ----
-  var cariKutu = document.getElementById('cari');
-  KISILER.forEach(function (k) {
-    var input = el('input', { inputmode: 'decimal', placeholder: '0,00' });
-    if (durum.cari[k]) input.value = sayi(durum.cari[k]);
-    input.addEventListener('input', function () {
-      var v = kurusaCevir(input.value);
-      durum.cari[k] = v === null ? 0 : v;
-      kaydet();
-      sonucCiz();
+  function enterIle(input, fn) {
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') fn(); });
+  }
+
+  // ---- Kişiler ve cari ----
+  var kisilerKutu = document.getElementById('kisiler');
+
+  function kisilerCiz() {
+    kisilerKutu.textContent = '';
+    durum.kisiler.forEach(function (k, i) {
+      var isim = el('input', { value: k.ad, placeholder: 'İsim', 'aria-label': 'İsim', autocapitalize: 'words' });
+      isim.addEventListener('input', function () {
+        k.ad = isim.value;
+        kaydet();
+        isimleriYenile();
+      });
+      isim.addEventListener('blur', function () {
+        if (!k.ad.trim()) { k.ad = 'Doktor ' + (i + 1); isim.value = k.ad; kaydet(); isimleriYenile(); }
+      });
+
+      var cari = el('input', { inputmode: 'decimal', placeholder: '0,00', 'aria-label': 'Yatan cari' });
+      if (durum.cari[k.id]) cari.value = sayi(durum.cari[k.id]);
+      cari.addEventListener('input', function () {
+        var v = kurusaCevir(cari.value);
+        durum.cari[k.id] = v === null ? 0 : v;
+        kaydet();
+        sonucCiz();
+      });
+      cari.addEventListener('blur', function () {
+        if (durum.cari[k.id]) cari.value = sayi(durum.cari[k.id]);
+      });
+
+      var sil = el('button', {
+        class: 'del', type: 'button', 'aria-label': 'Kişiyi sil', text: '×',
+        disabled: durum.kisiler.length <= EN_AZ_KISI,
+        onclick: function () {
+          if (!confirm(ad(k.id) + ' silinsin mi? Harcamaları ve ona ait transferler de silinir.')) return;
+          durum.kisiler.splice(durum.kisiler.indexOf(k), 1);
+          delete durum.cari[k.id];
+          delete durum.harcamalar[k.id];
+          durum.transferler = durum.transferler.filter(function (t) { return t.kimden !== k.id && t.kime !== k.id; });
+          kaydet();
+          hepsiniCiz();
+        }
+      });
+
+      kisilerKutu.appendChild(el('div', { class: 'kisi-satir' }, [isim, cari, sil]));
     });
-    input.addEventListener('blur', function () {
-      if (durum.cari[k]) input.value = sayi(durum.cari[k]);
-    });
-    cariKutu.appendChild(el('div', null, [el('label', { text: k }), input]));
+  }
+
+  document.getElementById('kisi-ekle').addEventListener('click', function () {
+    kisiEkle(durum);
+    kaydet();
+    hepsiniCiz();
+    var isimler = kisilerKutu.querySelectorAll('.kisi-satir input:first-child');
+    var son = isimler[isimler.length - 1];
+    son.focus();
+    son.select();
   });
 
   // ---- Harcamalar ----
   var harcamaKutu = document.getElementById('harcamalar');
   var harcamaParcalari = {};
-  KISILER.forEach(function (k) {
-    var tutar = el('input', { class: 'amt', inputmode: 'decimal', placeholder: 'Tutar' });
-    var not = el('input', { class: 'note', placeholder: 'Açıklama' });
-    var toplamYazi = el('span');
-    var liste = el('ul', { class: 'items' });
 
-    function ekle() {
-      var v = kurusaCevir(tutar.value);
-      if (v === null || v === 0) { hataGoster(tutar); return; }
-      durum.harcamalar[k].push({ tutar: v, not: not.value.trim() });
-      tutar.value = '';
-      not.value = '';
-      tutar.focus();
-      kaydet();
-      harcamaCiz(k);
-      sonucCiz();
-    }
-    tutar.addEventListener('keydown', function (e) { if (e.key === 'Enter') ekle(); });
-    not.addEventListener('keydown', function (e) { if (e.key === 'Enter') ekle(); });
+  function harcamalarCiz() {
+    harcamaKutu.textContent = '';
+    harcamaParcalari = {};
+    durum.kisiler.forEach(function (k) {
+      var tutar = el('input', { class: 'amt', inputmode: 'decimal', placeholder: 'Tutar', 'aria-label': 'Tutar' });
+      var not = el('input', { class: 'note', placeholder: 'Açıklama', 'aria-label': 'Açıklama' });
+      var baslik = el('strong', { text: ad(k.id) });
+      var toplamYazi = el('span');
+      var liste = el('ul', { class: 'items' });
 
-    harcamaParcalari[k] = { toplam: toplamYazi, liste: liste };
-    harcamaKutu.appendChild(el('div', { class: 'person' }, [
-      el('div', { class: 'person-head' }, [el('strong', { text: k }), toplamYazi]),
-      el('div', { class: 'row' }, [tutar, not, el('button', { class: 'add', type: 'button', text: 'Ekle', onclick: ekle })]),
-      liste
-    ]));
-  });
+      function ekle() {
+        var v = kurusaCevir(tutar.value);
+        if (v === null || v === 0) { hataGoster(tutar); return; }
+        durum.harcamalar[k.id].push({ tutar: v, not: not.value.trim() });
+        tutar.value = '';
+        not.value = '';
+        tutar.focus();
+        kaydet();
+        harcamaListesiCiz(k.id);
+        sonucCiz();
+      }
+      enterIle(tutar, ekle);
+      enterIle(not, ekle);
 
-  function harcamaCiz(k) {
-    var p = harcamaParcalari[k];
-    p.toplam.textContent = tl(toplam(durum.harcamalar[k]));
+      harcamaParcalari[k.id] = { baslik: baslik, toplam: toplamYazi, liste: liste };
+      harcamaKutu.appendChild(el('div', { class: 'person' }, [
+        el('div', { class: 'person-head' }, [baslik, toplamYazi]),
+        el('div', { class: 'row' }, [tutar, not, el('button', { class: 'add', type: 'button', text: 'Ekle', onclick: ekle })]),
+        liste
+      ]));
+      harcamaListesiCiz(k.id);
+    });
+  }
+
+  function harcamaListesiCiz(id) {
+    var p = harcamaParcalari[id];
+    p.toplam.textContent = tl(toplam(durum.harcamalar[id]));
     p.liste.textContent = '';
-    durum.harcamalar[k].forEach(function (h, i) {
+    durum.harcamalar[id].forEach(function (h, i) {
       p.liste.appendChild(el('li', null, [
         el('span', { class: 'what', text: h.not || ('Harcama ' + (i + 1)) }),
         el('span', { class: 'val', text: tl(h.tutar) }),
-        el('button', { type: 'button', 'aria-label': 'Sil', text: '×', onclick: function () {
-          durum.harcamalar[k].splice(i, 1);
+        el('button', { class: 'del', type: 'button', 'aria-label': 'Sil', text: '×', onclick: function () {
+          durum.harcamalar[id].splice(i, 1);
           kaydet();
-          harcamaCiz(k);
+          harcamaListesiCiz(id);
           sonucCiz();
         } })
       ]));
@@ -377,14 +469,23 @@
   // ---- Transferler ----
   var kimden = document.getElementById('t-kimden');
   var kime = document.getElementById('t-kime');
-  KISILER.forEach(function (k, i) {
-    kimden.appendChild(el('option', { value: k, text: k + ' →' }));
-    kime.appendChild(el('option', { value: k, text: '→ ' + k }));
-  });
-  kime.value = KISILER[1];
   var tTutar = document.getElementById('t-tutar');
   var tNot = document.getElementById('t-not');
   var tListe = document.getElementById('transferler');
+
+  function seciciCiz() {
+    var eskiKimden = kimden.value;
+    var eskiKime = kime.value;
+    kimden.textContent = '';
+    kime.textContent = '';
+    durum.kisiler.forEach(function (k) {
+      kimden.appendChild(el('option', { value: k.id, text: ad(k.id) + ' →' }));
+      kime.appendChild(el('option', { value: k.id, text: '→ ' + ad(k.id) }));
+    });
+    var idler = durum.kisiler.map(function (k) { return k.id; });
+    kimden.value = idler.indexOf(eskiKimden) !== -1 ? eskiKimden : idler[0];
+    kime.value = idler.indexOf(eskiKime) !== -1 ? eskiKime : idler[1];
+  }
 
   function transferEkle() {
     if (kimden.value === kime.value) { hataGoster(kime); return; }
@@ -398,8 +499,8 @@
     sonucCiz();
   }
   document.getElementById('t-ekle').addEventListener('click', transferEkle);
-  tTutar.addEventListener('keydown', function (e) { if (e.key === 'Enter') transferEkle(); });
-  tNot.addEventListener('keydown', function (e) { if (e.key === 'Enter') transferEkle(); });
+  enterIle(tTutar, transferEkle);
+  enterIle(tNot, transferEkle);
 
   function transferCiz() {
     tListe.textContent = '';
@@ -408,11 +509,11 @@
       return;
     }
     durum.transferler.forEach(function (t, i) {
-      var yazi = t.kimden + ' → ' + t.kime + (t.not ? ' (' + t.not + ')' : '');
+      var yazi = ad(t.kimden) + ' → ' + ad(t.kime) + (t.not ? ' (' + t.not + ')' : '');
       tListe.appendChild(el('li', null, [
         el('span', { class: 'what', text: yazi }),
         el('span', { class: 'val', text: tl(t.tutar) }),
-        el('button', { type: 'button', 'aria-label': 'Sil', text: '×', onclick: function () {
+        el('button', { class: 'del', type: 'button', 'aria-label': 'Sil', text: '×', onclick: function () {
           durum.transferler.splice(i, 1);
           kaydet();
           transferCiz();
@@ -423,8 +524,10 @@
   }
 
   // ---- Sonuç ----
+  var sonHesap = null;
+
   function sonucCiz() {
-    var h = hesapla();
+    var h = sonHesap = hesapla();
     var baslik = document.getElementById('durum-baslik');
     baslik.textContent = '';
     baslik.appendChild(el('tr', null, [el('th')].concat(h.satirlar.map(function (s) { return el('th', { text: s.kisi }); }))));
@@ -432,7 +535,7 @@
     govde.textContent = '';
     [['cari', 'Cari'], ['harcama', '− Harcama'], ['giden', '− Giden'], ['gelen', '+ Gelen'], ['kalan', '= Kalan']].forEach(function (r) {
       govde.appendChild(el('tr', { class: r[0] === 'kalan' ? 'total' : '' }, [el('td', { text: r[1] })].concat(h.satirlar.map(function (s) {
-        return el('td', { class: s[r[0]] < 0 ? 'neg' : '', text: sayi(s[r[0]]) });
+        return el('td', { class: s[r[0]] < 0 ? 'neg' : '', text: sayiKisa(s[r[0]]) });
       }))));
     });
     document.getElementById('toplam-kalan').textContent = tl(h.toplamKalan);
@@ -454,18 +557,66 @@
     });
   }
 
-  document.getElementById('sifirla').addEventListener('click', function () {
-    if (!confirm('Bütün rakamlar silinip yeni aya başlanacak. Emin misin?')) return;
-    durum = bosDurum();
-    kaydet();
-    location.reload();
+  function paylasimMetni() {
+    var h = sonHesap || hesapla();
+    var satirlar = ['ASM Cari Hesaplama', ''];
+    h.satirlar.forEach(function (s) {
+      satirlar.push(s.kisi + ': cari ' + tl(s.cari) + ', harcama ' + tl(s.harcama) + ', kalan ' + tl(s.kalan));
+    });
+    satirlar.push('', 'Toplam kalan: ' + tl(h.toplamKalan), 'Kişi başı pay: ' + tl(Math.round(h.kisiBasi)), '');
+    if (!h.odemeler.length) {
+      satirlar.push('Herkes eşit, kimsenin para atmasına gerek yok.');
+    } else {
+      satirlar.push('Eşitleme:');
+      h.odemeler.forEach(function (o) { satirlar.push('• ' + o.kimden + ' → ' + o.kime + ': ' + tl(o.tutar)); });
+    }
+    return satirlar.join('\n');
+  }
+
+  document.getElementById('paylas').addEventListener('click', function () {
+    var metin = paylasimMetni();
+    if (window.Android && window.Android.paylas) {
+      window.Android.paylas(metin);
+    } else if (navigator.share) {
+      navigator.share({ text: metin }).catch(function () {});
+    } else if (navigator.clipboard) {
+      navigator.clipboard.writeText(metin).then(function () { alert('Sonuç panoya kopyalandı.'); });
+    }
   });
 
-  KISILER.forEach(harcamaCiz);
-  transferCiz();
-  sonucCiz();
+  // İsim değişince sadece isim gösterilen yerler yenilenir; yazılan kutu odağını kaybetmesin.
+  function isimleriYenile() {
+    durum.kisiler.forEach(function (k) {
+      if (harcamaParcalari[k.id]) harcamaParcalari[k.id].baslik.textContent = ad(k.id);
+    });
+    seciciCiz();
+    transferCiz();
+    sonucCiz();
+  }
+
+  function hepsiniCiz() {
+    kisilerCiz();
+    harcamalarCiz();
+    seciciCiz();
+    transferCiz();
+    sonucCiz();
+  }
+
+  document.getElementById('sifirla').addEventListener('click', function () {
+    if (!confirm('Yeni aya geçilsin mi? Kişiler kalır; cari, harcamalar ve transferler silinir.')) return;
+    durum.kisiler.forEach(function (k) {
+      durum.cari[k.id] = 0;
+      durum.harcamalar[k.id] = [];
+    });
+    durum.transferler = [];
+    kaydet();
+    hepsiniCiz();
+  });
+
+  hepsiniCiz();
 
   window.__hesapla = hesapla; // test için
+  window.__paylasimMetni = paylasimMetni;
 })();
 </script>
 </body>

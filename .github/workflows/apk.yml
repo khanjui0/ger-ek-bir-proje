@@ -1,4 +1,4 @@
-name: APK derle
+name: Derle
 
 on:
   push:
@@ -10,6 +10,8 @@ permissions:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      UPLOAD_KEY_PASSWORD: ${{ secrets.UPLOAD_KEY_PASSWORD }}
     steps:
       - uses: actions/checkout@v4
 
@@ -20,22 +22,34 @@ jobs:
 
       - uses: gradle/actions/setup-gradle@v4
 
+      - name: Play Store anahtarını çöz
+        if: env.UPLOAD_KEY_PASSWORD != ''
+        run: |
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+            -in app/upload.keystore.enc -out app/upload.keystore -pass env:UPLOAD_KEY_PASSWORD
+
       - name: Derle
         run: |
           chmod +x gradlew
-          ./gradlew --no-daemon assembleRelease
-          cp app/build/outputs/apk/release/app-release.apk OrtakHesap.apk
+          ./gradlew --no-daemon assembleRelease bundleRelease
+          cp app/build/outputs/apk/release/app-release.apk ASM-Cari-Hesaplama.apk
+          if [ -n "$UPLOAD_KEY_PASSWORD" ]; then
+            cp app/build/outputs/bundle/release/app-release.aab ASM-Cari-Hesaplama-PlayStore.aab
+          fi
 
       - uses: actions/upload-artifact@v4
         with:
-          name: OrtakHesap-apk
-          path: OrtakHesap.apk
+          name: ASM-Cari-Hesaplama
+          path: ASM-Cari-Hesaplama*
 
       - name: Sürüm olarak yayınla
         uses: softprops/action-gh-release@v2
         with:
           tag_name: surum-${{ github.run_number }}
-          name: Ortak Hesap (derleme ${{ github.run_number }})
+          name: ASM Cari Hesaplama 1.0.${{ github.run_number }}
           target_commitish: ${{ github.sha }}
           make_latest: true
-          files: OrtakHesap.apk
+          body: |
+            - **ASM-Cari-Hesaplama.apk**: telefona doğrudan kurmak için.
+            - **ASM-Cari-Hesaplama-PlayStore.aab**: Google Play Console'a yüklemek için (Play anahtarı tanımlıysa üretilir).
+          files: ASM-Cari-Hesaplama*

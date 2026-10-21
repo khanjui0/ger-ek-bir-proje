@@ -1,16 +1,18 @@
-# Ortak Hesap
+# ASM Cari Hesaplama
 
-Ercüment, Aişegül ve Murat için aylık ortak hesap uygulaması (Android).
+Aile Sağlığı Merkezi hekimleri için aylık cari paylaşım hesaplayıcısı (Android).
 
-- **Cari:** ayın 8'inde her kişiye yatan tutar.
-- **Harcamalar:** her kişi yaptığı harcamaları tek tek ekler, otomatik toplanır.
-- **Birbirine atılan paralar:** ödeme yapmak için biri diğerine para attıysa buraya yazılır.
+- **Kişiler ve cari:** varsayılan "Doktor 1", "Doktor 2"; "Kişi ekle" ile çoğalır, isimler değiştirilebilir.
+- **Harcamalar:** her kişi harcamalarını tek tek ekler, otomatik toplanır.
+- **Birbirine atılan paralar:** ödeme için biri diğerine para attıysa kaydedilir.
 - **Durum:** `cari − harcama − giden + gelen = elde kalan`.
-- **Eşitleme:** toplam kalan üçe bölünür; herkesin eşit kalması için kimin kime ne kadar atacağı tabloda gösterilir.
+- **Eşitleme:** toplam kalan kişi sayısına bölünür; kimin kime ne kadar atacağı gösterilir ve paylaşılabilir.
 
-Veriler telefonda saklanır; "Yeni ay" ile sıfırlanır.
+Veriler yalnızca telefonda saklanır; "Yeni ay" kişileri koruyup rakamları sıfırlar.
 
-## APK
+## İndirme
+Her push'ta GitHub Actions derler ve **Releases** sayfasına koyar:
+- `ASM-Cari-Hesaplama.apk` — telefona doğrudan kurmak için
+- `ASM-Cari-Hesaplama-PlayStore.aab` — Google Play'e yüklemek için (`UPLOAD_KEY_PASSWORD` tanımlıysa)
 
-Her push'ta GitHub Actions APK'yı derler ve **Releases** sayfasına `OrtakHesap.apk` olarak koyar.
-Telefondan en son sürümü indirip kurmak yeterli (bilinmeyen kaynaklardan yüklemeye izin vermek gerekebilir).
+Play Store'a yükleme adımları: [play-store/YUKLEME-REHBERI.md](play-store/YUKLEME-REHBERI.md)

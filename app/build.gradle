@@ -2,26 +2,39 @@ plugins {
     id 'com.android.application'
 }
 
+// CI'da Play Store anahtarı çözüldüyse onunla, yoksa depodaki test anahtarıyla imzalanır.
+def uploadKeystore = file('upload.keystore')
+def uploadPassword = System.getenv('UPLOAD_KEY_PASSWORD')
+def playImzasi = uploadKeystore.exists() && uploadPassword
+
 android {
-    namespace 'com.ortakhesap'
-    compileSdk 35
+    namespace 'com.asmcari.hesaplama'
+    compileSdk 36
 
     defaultConfig {
-        applicationId 'com.ortakhesap'
+        applicationId 'com.asmcari.hesaplama'
         minSdk 26
-        targetSdk 35
-        versionCode 1
-        versionName '1.0'
+        targetSdk 36
+        // Play Store her yüklemede daha büyük bir versionCode ister; CI derleme numarasını kullanır.
+        def derleme = (System.getenv('GITHUB_RUN_NUMBER') ?: '1').toInteger()
+        versionCode derleme
+        versionName "1.0.${derleme}"
     }
 
     signingConfigs {
-        // Kişisel kullanım için sabit anahtar: her derleme aynı imzayla çıkar,
-        // böylece yeni sürüm eskisinin üstüne (veriler silinmeden) kurulabilir.
         release {
-            storeFile file('release.keystore')
-            storePassword 'ortakhesap123'
-            keyAlias 'ortakhesap'
-            keyPassword 'ortakhesap123'
+            if (playImzasi) {
+                storeFile uploadKeystore
+                storePassword uploadPassword
+                keyAlias 'upload'
+                keyPassword uploadPassword
+            } else {
+                // Herkese açık test anahtarı: sadece elden kurulan APK için, Play Store'a yüklenmez.
+                storeFile file('test.keystore')
+                storePassword 'ortakhesap123'
+                keyAlias 'ortakhesap'
+                keyPassword 'ortakhesap123'
+            }
         }
     }
 
